@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -111,8 +112,8 @@ public class RimCzechGitDownloader
             ProcessRimworld(expansions);
         }
 
-        bool CheckRimworldFolder(string rimFolder, out Expansion[] expansions) {
-            expansions = null;
+        bool CheckRimworldFolder(string rimFolder, [NotNullWhen(true)] out Expansion[] expansions) {
+            expansions = null!;
             if(!Directory.Exists(rimFolder)) return false;
 
             expansions = Expansion.GetExpansions(rimFolder, out var core);
@@ -131,7 +132,7 @@ public class RimCzechGitDownloader
                 foreach(var expansion in expansions)
                 {
                     if(!expansion.Exists) continue;
-                    if(Directory.Exists(expansion.LanguageDir)) Directory.Delete(expansion.LanguageDir);
+                    if(Directory.Exists(expansion.LanguageDir)) Directory.Delete(expansion.LanguageDir, true);
                 }
 
                 Console.WriteLine("Kopíruji aktuální překlad češtiny do hry.");
