@@ -59,6 +59,7 @@ public class RimCzechGitDownloader
 
 	private static void Main(string[] args)
 	{
+		Console.OutputEncoding = System.Text.Encoding.UTF8;
 		Console.WriteLine($"Rim Czech Git Downloader - v {Version}");
 		Console.WriteLine("Hledám instalaci RimWorldu...");
 		if (args?.Length > 0)
