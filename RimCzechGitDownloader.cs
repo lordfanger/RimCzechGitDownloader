@@ -55,7 +55,7 @@ public class RimCzechGitDownloader
 		}
 	}
 
-	private static string Version => "1.4";
+	private static string Version => "1.5";
 
 	private static void Main(string[] args)
 	{
