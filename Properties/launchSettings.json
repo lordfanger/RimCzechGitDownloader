@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RimCzechGitDownloader": {
+      "commandName": "Project",
+      "commandLineArgs": "-source https://github.com/lordfanger/RimWorld-Czech"
+    }
+  }
+}
