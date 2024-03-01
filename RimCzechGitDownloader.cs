@@ -1,8 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Compression;
@@ -15,58 +13,63 @@ public class RimCzechGitDownloader
 {
 	private class Expansion
 	{
-		private readonly string _rimBase;
-		private readonly string _name;
+        private readonly string _name;
 		private readonly string _checkPart;
-		private readonly string _baseDir;
-		private readonly string _languageDir;
-		private readonly bool _exists;
 
-		public Expansion(string rimBase, string name)
+        public Expansion(string rimBase, string name)
 		{
-			_rimBase = rimBase;
-			_name = name;
+            _name = name;
 			_checkPart = $"/{name}/";
-			_baseDir = Path.Combine(_rimBase, "Data", name, "Languages");
-			_languageDir = Path.Combine(_baseDir, "Czech - git");
-			_exists = Directory.Exists(_baseDir);
+			var baseDir = Path.Combine(rimBase, "Data", name, "Languages");
+			LanguageDir = Path.Combine(baseDir, "Czech - git");
+			Exists = Directory.Exists(baseDir);
 		}
 
-		public bool Exists => _exists;
+		public bool Exists { get; }
 
-		public string LanguageDir => _languageDir;
+        public string LanguageDir { get; }
 
-		public bool IsForExpansion(string fullName) => fullName.Contains(_checkPart, StringComparison.OrdinalIgnoreCase);
+        public bool IsForExpansion(string fullName) => fullName.Contains(_checkPart, StringComparison.OrdinalIgnoreCase);
 
 		public string GetPathFor(string[] parts)
 		{
-			return Path.Combine(new[] { _languageDir }.Concat(parts.SkipWhile(s => !s.Equals(_name, StringComparison.OrdinalIgnoreCase)).Skip(1)).ToArray());
+			return Path.Combine([LanguageDir, .. parts.SkipWhile(s => !s.Equals(_name, StringComparison.OrdinalIgnoreCase)).Skip(1)]);
 		}
 
 		public static Expansion[] GetExpansions(string rimBase, out Expansion core)
 		{
 			core = new Expansion(rimBase, "Core");
-			return new Expansion[] {
+			return [
 					core,
 					new Expansion(rimBase, "Royalty"),
 					new Expansion(rimBase, "Ideology"),
 					new Expansion(rimBase, "Biotech"),
-				};
+				];
 		}
 	}
 
-	private static string Version => "1.5";
+	private const string DEFAULT_GITHUB_URL = "https://github.com/Ludeon/rimworld-Czech/archive/refs/heads/master.zip";
+
+    private static string Version => "1.6";
 
 	private static void Main(string[] args)
 	{
 		Console.OutputEncoding = System.Text.Encoding.UTF8;
 		Console.WriteLine($"Rim Czech Git Downloader - v {Version}");
 		Console.WriteLine("Hledám instalaci RimWorldu...");
-		if (args?.Length > 0)
+        var (rimWorldDirectory, githubUrl) = args switch
+        {
+		    [var directory]                        => (directory, DEFAULT_GITHUB_URL),
+			[var directory, "-source", var source] => (directory, source),
+			["-source", var source]                => (null, source),
+			_                                      => (null, DEFAULT_GITHUB_URL)
+        };
+		
+		if (!string.IsNullOrEmpty(rimWorldDirectory))
 		{
-			SafeExecute(() => CheckForRimworldFolder(args[0]));
+			SafeExecute(() => CheckForRimWorldFolder(rimWorldDirectory));
 		}
-		SafeExecute(() => CheckForRimworldFolder(@".\"));
+		SafeExecute(() => CheckForRimWorldFolder(@".\"));
 		SafeExecute(() => CheckForSteamFolder(@"C:\Program Files\Steam\steamapps"));
 		SafeExecute(() => CheckForSteamFolder(@"C:\Program Files (x86)\Steam\steamapps"));
 
@@ -104,7 +107,7 @@ public class RimCzechGitDownloader
 				() =>
 				{
 					var rimFolder = Path.Combine(path, "common", "RimWorld");
-					CheckForRimworldFolder(rimFolder);
+					CheckForRimWorldFolder(rimFolder);
 				});
 		}
 
@@ -117,16 +120,16 @@ public class RimCzechGitDownloader
 			catch { }
 		}
 
-		void CheckForRimworldFolder(string rimFolder)
+		void CheckForRimWorldFolder(string rimFolder)
 		{
-			if (!CheckRimworldFolder(rimFolder, out var expansions)) return;
+			if (!CheckRimWorldFolder(rimFolder, out var expansions)) return;
 
 			Console.WriteLine("Nalezena instalace RimWorldu.");
 			Console.WriteLine(rimFolder);
-			ProcessRimworld(expansions);
+			ProcessRimWorld(expansions);
 		}
 
-		bool CheckRimworldFolder(string rimFolder, [NotNullWhen(true)] out Expansion[] expansions)
+		bool CheckRimWorldFolder(string rimFolder, [NotNullWhen(true)] out Expansion[] expansions)
 		{
 			expansions = null!;
 			if (!Directory.Exists(rimFolder)) return false;
@@ -136,7 +139,7 @@ public class RimCzechGitDownloader
 			return true;
 		}
 
-		void ProcessRimworld(Expansion[] expansions)
+		void ProcessRimWorld(Expansion[] expansions)
 		{
 			try
 			{
@@ -191,7 +194,9 @@ public class RimCzechGitDownloader
 		Stream GetGitZip()
 		{
 			using var httpClient = new HttpClient();
-			var response = httpClient.Send(new HttpRequestMessage(HttpMethod.Get, @"https://github.com/Ludeon/RimWorld-Czech/archive/refs/heads/master.zip"));
+			//var response = httpClient.Send(new HttpRequestMessage(HttpMethod.Get, @"https://github.com/Ludeon/rimworld-Czech/archive/refs/heads/master.zip"));
+			//var response = httpClient.Send(new HttpRequestMessage(HttpMethod.Get, @"https://github.com/lordfanger/rimworld-Czech/archive/refs/heads/biotech-1.zip"));
+			var response = httpClient.Send(new HttpRequestMessage(HttpMethod.Get, githubUrl));
 			using var data = response.Content.ReadAsStream();
 			var ms = new MemoryStream();
 			data.CopyTo(ms);
