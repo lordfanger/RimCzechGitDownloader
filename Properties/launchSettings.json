@@ -1,8 +1,8 @@
 {
   "profiles": {
     "RimCzechGitDownloader": {
-      "commandName": "Project",
-      "commandLineArgs": "-source https://github.com/lordfanger/RimWorld-Czech"
+        "commandName": "Project",
+        "commandLineArgs": "\"U:\\Hry\\SteamLib\\steamapps\\common\\RimWorld\" -language \"czech - git\""
     }
   }
 }

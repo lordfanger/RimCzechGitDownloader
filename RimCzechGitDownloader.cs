@@ -21,7 +21,7 @@ public class RimCzechGitDownloader
             _name = name;
 			_checkPart = $"/{name}/";
 			var baseDir = Path.Combine(rimBase, "Data", name, "Languages");
-			LanguageDir = Path.Combine(baseDir, "Czech - git");
+			LanguageDir = Path.Combine(baseDir, LangugaDirName);
 			Exists = Directory.Exists(baseDir);
 		}
 
@@ -44,27 +44,43 @@ public class RimCzechGitDownloader
 					new Expansion(rimBase, "Royalty"),
 					new Expansion(rimBase, "Ideology"),
 					new Expansion(rimBase, "Biotech"),
+					new Expansion(rimBase, "Anomaly"),
 				];
 		}
 	}
 
-	private const string DEFAULT_GITHUB_URL = "https://github.com/Ludeon/rimworld-Czech/archive/refs/heads/master.zip";
+    private static string LangugaDirName = "Czech - git";
 
-    private static string Version => "1.6";
+    private const string DEFAULT_GITHUB_URL = "https://github.com/Ludeon/rimworld-Czech/archive/refs/heads/master.zip";
+
+    private static string Version => "1.7";
 
 	private static void Main(string[] args)
 	{
 		Console.OutputEncoding = System.Text.Encoding.UTF8;
 		Console.WriteLine($"Rim Czech Git Downloader - v {Version}");
 		Console.WriteLine("Hledám instalaci RimWorldu...");
-        var (rimWorldDirectory, githubUrl) = args switch
+        var (rimWorldDirectory, githubUrl) = ((string?)null, DEFAULT_GITHUB_URL);
+
+        while (args is not [])
         {
-		    [var directory]                        => (directory, DEFAULT_GITHUB_URL),
-			[var directory, "-source", var source] => (directory, source),
-			["-source", var source]                => (null, source),
-			_                                      => (null, DEFAULT_GITHUB_URL)
-        };
-		
+            if (args is ["-source", var source, .. var rest])
+            {
+				args = rest;
+				githubUrl = source;
+            }
+			else if (args is ["-language", var language, .. var rest2])
+            {
+                args = rest2;
+				LangugaDirName = language;
+            }
+            else if (args is [var directory, .. var rest3])
+            {
+				args = rest3;
+				rimWorldDirectory = directory;
+            }
+        }
+
 		if (!string.IsNullOrEmpty(rimWorldDirectory))
 		{
 			SafeExecute(() => CheckForRimWorldFolder(rimWorldDirectory));
@@ -193,6 +209,7 @@ public class RimCzechGitDownloader
 
 		Stream GetGitZip()
 		{
+            Console.WriteLine($"Downloading from '{githubUrl}'");
 			using var httpClient = new HttpClient();
 			//var response = httpClient.Send(new HttpRequestMessage(HttpMethod.Get, @"https://github.com/Ludeon/rimworld-Czech/archive/refs/heads/master.zip"));
 			//var response = httpClient.Send(new HttpRequestMessage(HttpMethod.Get, @"https://github.com/lordfanger/rimworld-Czech/archive/refs/heads/biotech-1.zip"));
@@ -201,7 +218,8 @@ public class RimCzechGitDownloader
 			var ms = new MemoryStream();
 			data.CopyTo(ms);
 			ms.Position = 0;
-			return ms;
+            Console.WriteLine($"Downloaded");
+            return ms;
 		}
 	}
 }
