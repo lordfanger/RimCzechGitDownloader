@@ -16,12 +16,12 @@ public class RimCzechGitDownloader
         private readonly string _name;
 		private readonly string _checkPart;
 
-        public Expansion(string rimBase, string name)
+        private Expansion(string rimBase, string name)
 		{
             _name = name;
 			_checkPart = $"/{name}/";
 			var baseDir = Path.Combine(rimBase, "Data", name, "Languages");
-			LanguageDir = Path.Combine(baseDir, LangugaDirName);
+			LanguageDir = Path.Combine(baseDir, LangugeDirName);
 			Exists = Directory.Exists(baseDir);
 		}
 
@@ -49,11 +49,11 @@ public class RimCzechGitDownloader
 		}
 	}
 
-    private static string LangugaDirName = "Czech - git";
+    private static string LangugeDirName = "Czech - git";
 
     private const string DEFAULT_GITHUB_URL = "https://github.com/Ludeon/rimworld-Czech/archive/refs/heads/master.zip";
 
-    private static string Version => "1.7";
+    private static string Version => "1.8";
 
 	private static void Main(string[] args)
 	{
@@ -72,7 +72,7 @@ public class RimCzechGitDownloader
 			else if (args is ["-language", var language, .. var rest2])
             {
                 args = rest2;
-				LangugaDirName = language;
+				LangugeDirName = language;
             }
             else if (args is [var directory, .. var rest3])
             {
@@ -159,6 +159,7 @@ public class RimCzechGitDownloader
 		{
 			try
 			{
+				Console.WriteLine($"Použitá složka pro češtinu: '{LangugeDirName}'.");
 				Console.WriteLine("Stahuji aktuální češtinu.");
 				var zipStream = GetGitZip();
 				using var zipArchive = new ZipArchive(zipStream);
@@ -199,7 +200,9 @@ public class RimCzechGitDownloader
 				Environment.Exit(1);
 			}
 
-			void CopyToFile(ZipArchiveEntry entry, string path)
+            return;
+
+            void CopyToFile(ZipArchiveEntry entry, string path)
 			{
 				var directory = Path.GetDirectoryName(path);
 				if (directory != null && !Directory.Exists(directory)) Directory.CreateDirectory(directory);
@@ -209,7 +212,7 @@ public class RimCzechGitDownloader
 
 		Stream GetGitZip()
 		{
-            Console.WriteLine($"Downloading from '{githubUrl}'");
+            Console.WriteLine($"Stahuji z '{githubUrl}'.");
 			using var httpClient = new HttpClient();
 			//var response = httpClient.Send(new HttpRequestMessage(HttpMethod.Get, @"https://github.com/Ludeon/rimworld-Czech/archive/refs/heads/master.zip"));
 			//var response = httpClient.Send(new HttpRequestMessage(HttpMethod.Get, @"https://github.com/lordfanger/rimworld-Czech/archive/refs/heads/biotech-1.zip"));
@@ -218,7 +221,7 @@ public class RimCzechGitDownloader
 			var ms = new MemoryStream();
 			data.CopyTo(ms);
 			ms.Position = 0;
-            Console.WriteLine($"Downloaded");
+            Console.WriteLine("Staženo.");
             return ms;
 		}
 	}
