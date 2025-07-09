@@ -54,7 +54,7 @@ public class RimCzechGitDownloader
 
     private const string DEFAULT_GITHUB_URL = "https://github.com/Ludeon/rimworld-Czech/archive/refs/heads/master.zip";
 
-    private static string Version => "1.8";
+    private static string Version => "1.10";
 
 	private static void Main(string[] args)
 	{
