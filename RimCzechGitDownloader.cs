@@ -1,4 +1,4 @@
-﻿// See https://aka.ms/new-console-template for more information
+// See https://aka.ms/new-console-template for more information
 
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -45,6 +45,7 @@ public class RimCzechGitDownloader
 					new Expansion(rimBase, "Ideology"),
 					new Expansion(rimBase, "Biotech"),
 					new Expansion(rimBase, "Anomaly"),
+					new Expansion(rimBase, "Odyssey"),
 				];
 		}
 	}
